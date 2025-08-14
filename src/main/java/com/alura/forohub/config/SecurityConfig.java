@@ -1,6 +1,7 @@
 package com.alura.forohub.config;
 
 import com.alura.forohub.security.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,10 +41,10 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
                 // Endpoints públicos
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/topicos").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/topicos/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/cursos").permitAll()
+                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/topicos").permitAll()
+                .requestMatchers(HttpMethod.GET, "/topicos/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/cursos").permitAll()
                 
                 // Documentación API
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
@@ -51,8 +52,18 @@ public class SecurityConfig {
                 // Actuator endpoints
                 .requestMatchers("/actuator/health").permitAll()
                 
+                // H2 Console (solo para desarrollo)
+                .requestMatchers("/h2-console/**").permitAll()
+                
                 // Todos los demás endpoints requieren autenticación
                 .anyRequest().authenticated()
+            )
+            .exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\":\"No autorizado\",\"mensaje\":\"Se requiere autenticación para acceder a este recurso\"}");
+                })
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
