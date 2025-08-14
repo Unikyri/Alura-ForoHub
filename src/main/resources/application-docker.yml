@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:mysql://mysql:3306/forohub?createDatabaseIfNotExist=true&serverTimezone=UTC
+    username: ${DB_USERNAME:forohub}
+    password: ${DB_PASSWORD:forohub123}
+
+logging:
+  level:
+    com.alura.forohub: INFO
+    org.springframework.security: INFO
